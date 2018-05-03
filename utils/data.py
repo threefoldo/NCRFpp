@@ -172,7 +172,9 @@ class Data:
 
     def initial_feature_alphabets(self):
         items = open(self.train_dir,'r').readline().strip('\n').split()
-        total_column = len(items)
+        # no features at the time
+        # check first item in first line for features
+        total_column = len(items[0].split('/'))
         if total_column > 2:
             for idx in range(1, total_column-1):
                 feature_prefix = items[idx].split(']',1)[0]+"]"
@@ -197,20 +199,21 @@ class Data:
     def build_alphabet(self, input_file):
         in_lines = open(input_file,'r').readlines()
         for line in in_lines:
-            if len(line) > 2:
-                pairs = line.strip().split()
-                word = pairs[0].decode('utf-8')
-                if self.number_normalized:
-                    word = normalize_word(word)
-                label = pairs[-1]
-                self.label_alphabet.add(label)
-                self.word_alphabet.add(word)
-                ## build feature alphabet 
-                for idx in range(self.feature_num):
-                    feat_idx = pairs[idx+1].split(']',1)[-1]
-                    self.feature_alphabets[idx].add(feat_idx)
-                for char in word:
-                    self.char_alphabet.add(char)
+            for item in line.strip().split():
+                if len(item) > 2:
+                    pairs = item.split('/')
+                    word = pairs[0].decode('utf-8')
+                    if self.number_normalized:
+                        word = normalize_word(word)
+                    label = pairs[-1]
+                    self.label_alphabet.add(label)
+                    self.word_alphabet.add(word)
+                    ## build feature alphabet 
+                    for idx in range(self.feature_num):
+                        feat_idx = pairs[idx+1].split(']',1)[-1]
+                        self.feature_alphabets[idx].add(feat_idx)
+                    for char in word:
+                        self.char_alphabet.add(char)
         self.word_alphabet_size = self.word_alphabet.size()
         self.char_alphabet_size = self.char_alphabet.size()
         self.label_alphabet_size = self.label_alphabet.size()

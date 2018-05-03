@@ -250,7 +250,7 @@ def batchify_with_label(input_batch_list, gpu, volatile_flag=False):
     char_seq_lengths = torch.LongTensor(length_list)
     for idx, (seq, seqlen) in enumerate(zip(pad_chars, char_seq_lengths)):
         for idy, (word, wordlen) in enumerate(zip(seq, seqlen)):
-            # print len(word), wordlen
+            # print len(word), wordlen, word
             char_seq_tensor[idx, idy, :wordlen] = torch.LongTensor(word)
     
     char_seq_tensor = char_seq_tensor[word_perm_idx].view(batch_size*max_seq_len,-1)
@@ -298,7 +298,7 @@ def train(data):
     for idx in range(data.HP_iteration):
         epoch_start = time.time()
         temp_start = epoch_start
-        print("Epoch: %s/%s" %(idx,data.HP_iteration))
+        print("******** Epoch: %s/%s" %(idx,data.HP_iteration))
         if data.optimizer == "SGD":
             optimizer = lr_decay(optimizer, idx, data.HP_lr_decay, data.HP_lr)
         instance_count = 0

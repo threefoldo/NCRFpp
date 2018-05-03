@@ -18,6 +18,74 @@ def normalize_word(word):
 
 
 def read_instance(input_file, word_alphabet, char_alphabet, feature_alphabets, label_alphabet, number_normalized, max_sent_length, char_padding_size=-1, char_padding_symbol = '</pad>'):
+    '''
+    each line contains a complete sample, word and labels are separated by "/".
+    '''
+    feature_num = len(feature_alphabets)
+    in_lines = open(input_file,'r').readlines()
+    instence_texts = []
+    instence_Ids = []
+    for line in in_lines:
+        items = line.strip().split()
+        if len(items) < 2:
+            continue
+
+        words = []
+        features = []
+        chars = []
+        labels = []
+        word_Ids = []
+        feature_Ids = []
+        char_Ids = []
+        label_Ids = []
+
+        for item in items:
+            # ignore invalid words/labels
+            if len(item) > 2 and item.find('/') > 0:
+                pairs = item.split('/')
+                word = pairs[0].decode('utf-8')
+                if number_normalized:
+                    word = normalize_word(word)
+                label = pairs[-1]
+                words.append(word)
+                labels.append(label)
+                word_Ids.append(word_alphabet.get_index(word))
+                label_Ids.append(label_alphabet.get_index(label))
+                ## get features
+                feat_list = []
+                feat_Id = []
+                for idx in range(feature_num):
+                    feat_idx = pairs[idx+1].split(']',1)[-1]
+                    feat_list.append(feat_idx)
+                    feat_Id.append(feature_alphabets[idx].get_index(feat_idx))
+                features.append(feat_list)
+                feature_Ids.append(feat_Id)
+                ## get char
+                char_list = []
+                char_Id = []
+                for char in word:
+                    char_list.append(char)
+                if char_padding_size > 0:
+                    char_number = len(char_list)
+                    if char_number < char_padding_size:
+                        char_list = char_list + [char_padding_symbol]*(char_padding_size-char_number)
+                    assert(len(char_list) == char_padding_size)
+                else:
+                    ### not padding
+                    pass
+                for char in char_list:
+                    char_Id.append(char_alphabet.get_index(char))
+                chars.append(char_list)
+                char_Ids.append(char_Id)
+        
+        # skip long sentences if specified
+        if (max_sent_length < 0) or (len(words) < max_sent_length):
+            instence_texts.append([words, features, chars, labels])
+            instence_Ids.append([word_Ids, feature_Ids, char_Ids,label_Ids])
+    return instence_texts, instence_Ids
+
+
+def read_instance2(input_file, word_alphabet, char_alphabet, feature_alphabets, label_alphabet, number_normalized, max_sent_length, char_padding_size=-1, char_padding_symbol = '</pad>'):
     feature_num = len(feature_alphabets)
     in_lines = open(input_file,'r').readlines()
     instence_texts = []
